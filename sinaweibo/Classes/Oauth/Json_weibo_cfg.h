@@ -9,3 +9,4 @@
 #define Kdisplay @"mobile"
 #define KregisterUrl @"https://api.weibo.com/oauth2/authorize"
 #define Kredirect_uri @"http://weibo.com"
+#define KbaseUrl @"https://api.weibo.com"

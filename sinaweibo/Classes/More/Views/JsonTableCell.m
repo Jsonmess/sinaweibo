@@ -53,29 +53,9 @@
     }
     //设置文字背景(清空背景颜色)
     self.textLabel.backgroundColor=[UIColor clearColor];
-    
-    //设置右边箭头属性
-    if (index.section==2) {
-        UIView *theview=[[UIView alloc]init];
-        theview.bounds=CGRectMake(0, 0, 74, 25);
-        UILabel *label=[[UILabel alloc]init];
-        label.backgroundColor=[UIColor clearColor];
-        label.font=[UIFont systemFontOfSize:12];
-        label.textColor=[UIColor grayColor];
-        label.textAlignment=NSTextAlignmentCenter;
-        label.frame=CGRectMake(0, 10,60, 20);
-        label.text=index.row? @"有图模式": @"经典模式";
-        UIImageView *image=[[UIImageView alloc]initWithImage:[UIImage imageNamed:@"common_icon_small_arrow.png"]];
-        [image setFrame:CGRectMake(60, 0, 10, 10)];
-        [theview addSubview:label];
-        [theview addSubview:image];
-        self.accessoryView=theview;
-        
-        
-    }else
-    {
+
         self.accessoryView=[[UIImageView alloc]initWithImage:[UIImage imageNamed:@"common_icon_arrow.png"]];
-    }
+ 
 }
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated
 {

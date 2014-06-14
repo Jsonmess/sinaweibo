@@ -28,7 +28,7 @@
 #import "WBaccount.h"
 #import "RegisterController.h"
 #define kTabbar_width 44
-@interface MoreController ()<UIActionSheetDelegate>
+@interface MoreController ()<UIAlertViewDelegate>
 @property (strong,nonatomic)NSArray *Resoure;
 @end
 
@@ -129,6 +129,24 @@
           //设置单元格背景等属性
         [cell SetUpCell:indexPath WithData:self.Resoure];
     }
+    //设置右边箭头属性
+    NSIndexPath * index=indexPath;
+    if (index.section==2) {
+        UIView *theview=[[UIView alloc]init];
+        theview.bounds=CGRectMake(0, 0, 74, 25);
+        UILabel *label=[[UILabel alloc]init];
+        label.backgroundColor=[UIColor clearColor];
+        label.font=[UIFont systemFontOfSize:12];
+        label.textColor=[UIColor grayColor];
+        label.textAlignment=NSTextAlignmentCenter;
+        label.frame=CGRectMake(0, 10,60, 20);
+        label.text=index.row ? @"有图模式":@"经典模式";
+        UIImageView *image=[[UIImageView alloc]initWithImage:[UIImage imageNamed:@"common_icon_small_arrow.png"]];
+        [image setFrame:CGRectMake(60, 0, 10, 10)];
+        [theview addSubview:label];
+        [theview addSubview:image];
+        cell.accessoryView=theview;
+    }
     //取出字典中的数据
     NSDictionary *dic=self.Resoure[indexPath.section][indexPath.row];
     cell.textLabel.text=dic[@"name"];
@@ -154,21 +172,29 @@
 #pragma mark-------实现账号登出（注销）
 -(void)LogouRegister
 {
-
-    UIAlertView *al=[UIAlertView alloc]initWithTitle:@"提示" message:@"确定注销当前账户么？" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:@"取消"];
+    UIAlertView *al=[[UIAlertView alloc]initWithTitle:@"提示" message:@"确定注销当前账户么？" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:@"取消",nil];
+    [al show];
+    //if (0==al.numberOfButtons) {
+//        AccountTool *tool=   [AccountTool SharedAccountTool];
+//        [tool SaveWBAccount:nil];
+//        UIWindow *windw=[UIApplication sharedApplication].keyWindow;
+//        UIAlertView *as=[[UIAlertView alloc]initWithTitle:@"小提示" message:@"您已经成功注销，请返回登录！" delegate:windw cancelButtonTitle:@"确定" otherButtonTitles: nil];
+//        [as show];
     
+    //}
+
     
 }
--(void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+
+-(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
     if (buttonIndex==0) {
-        AccountTool *tool=   [AccountTool SharedAccountTool];
-        [tool SaveWBAccount:nil];
-        UIWindow *windw=[UIApplication sharedApplication].keyWindow;
-        UIAlertView *al=[[UIAlertView alloc]initWithTitle:@"小提示" message:@"您已经成功注销，请返回登录！" delegate:windw cancelButtonTitle:@"确定" otherButtonTitles: nil];
-        [al show];
-        windw.RootViewController=[[RegisterController alloc]init];
+                AccountTool *tool= [AccountTool sharedAccountTool];
+                [tool saveAccount:nil];
+              UIWindow *windw=[UIApplication sharedApplication].keyWindow;
+                UIAlertView *as=[[UIAlertView alloc]initWithTitle:@"小提示" message:@"您已经成功注销，请返回登录！" delegate:windw cancelButtonTitle:@"确定" otherButtonTitles: nil];
+              [as show];
+        [windw setRootViewController:[[RegisterController alloc]init]];
     }
 }
-
 @end

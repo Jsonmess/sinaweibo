@@ -22,41 +22,68 @@
 
 #import "RegisterController.h"
 #import "Json_weibo_cfg.h"
-#import "AFNetworking.h"
+#import "HttpTool.h"
 #import "AccountTool.h"
 #import "MainController.h"
 #import "WBaccount.h"
+#import "MBProgressHUD.h"
 @interface RegisterController ()<UIWebViewDelegate>
 {
     
     UIWebView *_webview;
+    MBProgressHUD*_hud;
 }
 @end
 
 @implementation RegisterController
 
--(void)loadView
-{
-    _webview=[[UIWebView alloc]initWithFrame:[UIScreen mainScreen].applicationFrame];
-    self.view =_webview;
-}
+
 - (void)viewDidLoad
 {
+    _webview=[[UIWebView alloc]initWithFrame:[UIScreen mainScreen].applicationFrame];
+    [self.view addSubview:_webview];
+
     [super viewDidLoad];
 	//1.加载新浪授权登陆界面(获取未授权的Resquest Token)
     NSURL *regist_url=[NSURL URLWithString:[NSString stringWithFormat:@"%@?client_id=%@&redirect_uri=%@&display=%@",KregisterUrl,KappKey,Kappredirect_uri,Kdisplay]];
-    NSURLRequest *urlrequest=[NSURLRequest requestWithURL:regist_url];
+    NSURLRequest *urlrequest=[NSURLRequest requestWithURL:regist_url cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:5.0f];
     [_webview loadRequest:urlrequest];
     [_webview setBackgroundColor:[UIColor colorWithPatternImage:[UIImage imageNamed:@"register_view_bg.jpg"]]];
     [_webview setDelegate:self];
     
 }
-#pragma mark----实现UIWebView的方法
--(void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error
+#pragma mark----实现UIWebView代理的方法
+//开始加载数据
+-(void)webViewDidStartLoad:(UIWebView *)webView
 {
+    //创建指示器
+    MBProgressHUD*hud= [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    [hud setLabelText:@"正在加载中...."];
+    _hud=hud;
+    [hud setDimBackground:YES];
+    
+    
+}
+-(void)webViewDidFinishLoad:(UIWebView *)webView
+{
+
+    //隐藏所有指示器
+    [MBProgressHUD hideAllHUDsForView:self.view animated:YES];
+
+}
+//-(void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error
+//{
+//    Debuglog(@"%@",error.localizedDescription);
+//}
+//-(void)RequestError
+//{
+//    
+//    //隐藏所有指示器
+//    [MBProgressHUD hideAllHUDsForView:self.view animated:YES];
 //    UIAlertView *al=[[UIAlertView alloc]initWithTitle:@"提示" message:@"网络故障或网路未连接" delegate:self cancelButtonTitle:@"确定" otherButtonTitles: nil];
 //    [al show];
-}
+//    Debuglog(@"网络故障或网路未连接");
+//}
 -(BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
 {
     //1.将请求页面url转为字符串
@@ -82,34 +109,33 @@ else{
 }
 -(void)GetAccessToken:(NSString *)thecode
 {
-    //创建post请求   BaseURL只能包含协议头和主机名
-    AFHTTPClient *client=[AFHTTPClient  clientWithBaseURL:[NSURL URLWithString:@"https://api.weibo.com"]];
-    NSURLRequest *url_request=  [client requestWithMethod:@"POST" path:@"/oauth2/access_token" parameters:@{
-                                 @"client_id":KappKey,
-                                 @"client_secret":KappSecret,
-                                 @"grant_type":@"authorization_code",
-                                 @"code":thecode,
-                                 @"redirect_uri":Kappredirect_uri
-                                 
-                                 }];
-
-    //利用AFN框架创建nsurlrequest
-    AFJSONRequestOperation *json_op=[AFJSONRequestOperation JSONRequestOperationWithRequest:url_request success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
-        //Debuglog(@"请求成功！－－%@",JSON);
-        //创建账号对象
-        WBaccount *account=[[WBaccount alloc]init];
-        account .Uid=JSON[@"uid"];
-        account.accessToken=JSON[@"access_token"];
-        [[AccountTool SharedAccountTool] SaveWBAccount:account];
-        //获取主窗口
-        UIWindow *window=[UIApplication sharedApplication].keyWindow;
-        window.rootViewController=[[MainController alloc]init];
-    } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
-        //Debuglog(@"%@",error.localizedDescription);
-    }];
-    //开始发送
-    [json_op start];
-}
+    [HttpTool HttpSendwithPath:@"https://api.weibo.com" path:@"/oauth2/access_token" Params:@{
+          @"client_id":KappKey,
+          @"client_secret":KappSecret,
+         @"grant_type":@"authorization_code",
+          @"code":thecode,
+         @"redirect_uri":Kappredirect_uri
+        
+         }
+ PostSuccess:^(id Json) {
+     //隐藏所有指示器
+           [MBProgressHUD hideAllHUDsForView:self.view animated:YES];
+          //创建账号对象
+            WBaccount *account=[[WBaccount alloc]init];
+     Debuglog(@"json %@",Json);
+            account .Uid=Json[@"uid"];
+           account.accessToken=Json[@"access_token"];
+            [[AccountTool sharedAccountTool] saveAccount:account];
+           //获取主窗口
+            UIWindow *window=[UIApplication sharedApplication].keyWindow;
+            window.rootViewController=[[MainController alloc]init];
+     
+ } PostFaild:^(NSError *error) {
+     [MBProgressHUD hideAllHUDsForView:self.view animated:YES];
+     
+     
+ } WithMethod:@"POST"];
+    }
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];

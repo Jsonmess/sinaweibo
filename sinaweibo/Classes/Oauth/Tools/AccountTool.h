@@ -5,15 +5,17 @@
 //  Created by Jsion on 14-6-3.
 //  Copyright (c) 2014年 Json. All rights reserved.
 //
-//用于管理账号
-//工具类，只需要一个对象就可以了，所以应该优化为单例
 #import <Foundation/Foundation.h>
+#import "Singleton.h"
+#import "AccountTool.h"
+#import "Singleton.h"
 #import "WBaccount.h"
 @interface AccountTool : NSObject
 
-@property(nonatomic,strong)WBaccount *account;
-@property (nonatomic,copy)NSString *filepath;
+single_interface(AccountTool)
 
--(void)SaveWBAccount:(WBaccount *)account;
-+(id)SharedAccountTool;
+- (void)saveAccount:(WBaccount *)account;
+
+// 获得当前账号
+@property (nonatomic, readonly) WBaccount *account;
 @end

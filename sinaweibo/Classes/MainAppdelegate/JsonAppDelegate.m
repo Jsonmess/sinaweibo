@@ -27,9 +27,7 @@
     //3.判断沙盒中版本号和info中版本号是否相同
     if ([version isEqualToString:saveVersion]) {
         //版本号相同
-        
-        AccountTool *tool=[AccountTool SharedAccountTool];
-        if (tool.account) {
+        if (![AccountTool sharedAccountTool].account) {
             self.window.rootViewController=[[RegisterController alloc]init];
             
         }
